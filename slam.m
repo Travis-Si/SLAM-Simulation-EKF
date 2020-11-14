@@ -17,14 +17,14 @@ Marks = landmarks();
 % *****************************************%
 sensor_r = 1.5;
 % *****************************************%
-% If i-th landmark is sensored before, LANDMARK(i) = 1;
-% If j-th landmark is not sensored, LANDMARK(j) = 0;
-LANDMARK = zeros(1,size(Marks,2));
+% If i-th landmark is sensored before, landmarkStatus(i) = 1;
+% If j-th landmark is not sensored, landmarkStatus(j) = 0;
+landmarkStatus = zeros(1,size(Marks,2));
 % y_news -- landmarks first seen 
 % y_olds -- landmarks has been sensored before
 y_olds = zeros(3,size(Marks,2));
 y_news = zeros(3,size(Marks,2));
-%   State and covariance intialization
+% State and covariance intialization
 y = zeros(numel(R)+numel(Marks), 1); %** State && Map **%
 P = zeros(numel(y),numel(y));
 signature = zeros(1,size(Marks,2));
@@ -34,12 +34,13 @@ sigma = 0;
 % Map starts at 4&5
 s = [4 5];
 % 60 s/circle
- loop =120;
- % poses_ -- store the actual state
+ loop =120;   
+% poses_ -- store the actual state
 poses_ = zeros(3,loop);
 % poses -- store the estimated state
 poses = zeros(3,loop);
- %  PLOT setup
+
+% PLOT setup
 mapFig = figure(1);
 cla;
 axis([-2.5 2.5 -2.5 2.5])
@@ -111,46 +112,54 @@ sensor2 = line(...
     'xdata',[],...
     'ydata',[],...
     'LineWidth',0.8);
-  %% II. EKF-SLAM
+
+%% II. EKF-SLAM
 for t = 1:loop
     % control noise
     n = q.*randn(2,1);
-    % return the robot actual position£»
+    % return the robot actual position
     R = move(R, u, n);
-    
     i_olds=1;
     i_news=1;
     
+    % measurement update
     for i = 1:size(Marks,2)
-        %mesurement error
+        % mesurement error
         v = m.*randn(2,1);
-         yi= project(R, Marks(:,i)) + v;
-        if yi(1) < sensor_r && LANDMARK(i) == 1
+    % the coordinates of the landmark in the current local coordinate system
+    % if yi==0, the landmark is not sensored
+    % For the landmark sensered before, update its state with project();
+    % For the landmark not sensered before, initialized its state with backProject();
+        yi= project(R, Marks(:,i)) + v;
+        if yi(1) < sensor_r && landmarkStatus(i) == 1
                y_olds(:,i_olds) = [yi(1);yi(2);i];
                i_olds = i_olds + 1;
-        elseif  yi(1) < sensor_r &&  LANDMARK(i) == 0 
+        elseif  yi(1) < sensor_r &&  landmarkStatus(i) == 0 
                 y_news(:,i_news) = [yi(1);yi(2);i];
                 i_news = i_news + 1;
-                LANDMARK(i) = 1;                
+                landmarkStatus(i) = 1;                
         end
     end
    
     for i = i_olds:size(Marks,2)
         y_olds(:,i) = [100;0;0];
     end
+    
     for i = i_news:size(Marks,2)
         y_news(:,i) = [101;0;0];
     end
   
     % EKF
-    %  prediction
-    [y(r), JacobianMotion, Vt] = move(y(r), u, [0 0]);
+    % prediction
+    % y(r) is the predicted pose for the next step (assume no motion noise)
+    % sigma is the predicted state covariance
+    [y(r), motionJacobian, Vt] = move(y(r), u, [0 0]);
     P_rr = sigma;
-    P(r,:) = JacobianMotion*P(r,:);
+    P(r,:) = motionJacobian*P(r,:);
     P(:,r) = P(r,:)';
-    sigma = JacobianMotion*P_rr*JacobianMotion' + Vt*Q*Vt';
+    sigma = motionJacobian*P_rr*motionJacobian' + Vt*Q*Vt';
     
-     %  update
+    % update
     end_old = find(y_olds(1,:)==100,1);  
     if isempty(end_old)
         end_old=size(y_olds,2)+1;

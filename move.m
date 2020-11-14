@@ -1,5 +1,4 @@
 %Motion model
-
 function [ro, JacobianMotion, RO_n] = move(r, u, n)
     a = r(3);
     dx = u(1) + n(1);
