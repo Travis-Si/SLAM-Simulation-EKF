@@ -17,8 +17,8 @@ Marks = landmarks();
 % *****************************************%
 sensor_r = 1.5;
 % *****************************************%
-% i-th landmark is sensored before, LANDMARK(i) = 1;
-% j-th landmark is not sensored, LANDMARK(j) = 0;
+% If i-th landmark is sensored before, LANDMARK(i) = 1;
+% If j-th landmark is not sensored, LANDMARK(j) = 0;
 LANDMARK = zeros(1,size(Marks,2));
 % y_news -- landmarks first seen 
 % y_olds -- landmarks has been sensored before
