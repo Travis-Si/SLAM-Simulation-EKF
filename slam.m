@@ -233,8 +233,8 @@ for t = 1:loop
     poses_(2,t) = R(2);
     poses_(3,t) = R(3);
     
-     % 5. PLOT
-     % Actual positon and the range of sensor
+    % 5. PLOT
+    % Actual positon and the range of sensor
     set(RG, 'xdata', R(1), 'ydata', R(2));
     circle_x = linspace((R(1)-0.9999*sensor_r),(R(1)+0.9999*sensor_r));
     circle_y1 = sqrt(sensor_r^2 - (circle_x - R(1)).^2) + R(2);
@@ -256,19 +256,19 @@ for t = 1:loop
     legend([estimate_pose true_pose lG WG],{'Estimated Path','Actual Path' 'Estimated landmark' 'Actual landmark'})
 
   
-  if s(1)==4
+    if s(1)==4
         continue
-  end
- 
-  % The estimated locations of landmark
-  w = 2:((s(1)-2)/2);
-  w = 2*w;
-  landmark_estimated_x = y(w);
-  landmark_estimated_y = y(w+1);
-  set(lG, 'xdata', landmark_estimated_x, 'ydata', landmark_estimated_y);
-  
-%%%%% 1- the landmark is never sensored before (BLUE)
-  for g1 = 1:(end_new-1)
+    end
+
+    % The estimated locations of landmark
+    w = 2:((s(1)-2)/2);
+    w = 2*w;
+    landmark_estimated_x = y(w);
+    landmark_estimated_y = y(w+1);
+    set(lG, 'xdata', landmark_estimated_x, 'ydata', landmark_estimated_y);
+
+    %%%%% 1- the landmark is never sensored before (BLUE)
+    for g1 = 1:(end_new-1)
       if isempty(g1)
             break
       end
@@ -279,9 +279,10 @@ for t = 1:loop
       LE = P(temp1,temp1);
       [X,Y] = cov2elli(le,LE,3,16);   
       set(eG1(o1),'xdata',X,'ydata',Y,'color','b');
-  end
-  %%%% 2- the landmark has been sensored and is sensored again (RED)
-  for g2 = 1:(end_old-1)
+    end
+    
+    %%%% 2- the landmark has been sensored and is sensored again (RED)
+    for g2 = 1:(end_old-1)
       if isempty(g2)
             break
       end
@@ -292,13 +293,14 @@ for t = 1:loop
       LE = P(temp2,temp2);
       [X,Y] = cov2elli(le,LE,3,16);  
       set(eG1(o2),'xdata',X,'ydata',Y,'color','r');
-  end
-  %%%% 3- the landmark has been sensored and is NOT sensored now (BLACK)
-  v = find(signature==0,1);
-  if isempty(v)
+    end
+    
+    %%%% 3- the landmark has been sensored and is NOT sensored now (BLACK)
+    v = find(signature==0,1);
+    if isempty(v)
       v = size(signature,2)+1;
-  end
-  for g3 = 1:v-1
+    end
+    for g3 = 1:v-1
       if isempty(g3)
             break
       end
@@ -311,17 +313,9 @@ for t = 1:loop
       [X,Y] = cov2elli(le,LE,3,16);
       set(eG1(signature(g3)),'xdata',X,'ydata',Y,'color','k');
       end
-  end
+    end
 
-% Covariance of the robot position (RED)
-%      if t > 1
-%          re = y(r(1:2));
-%          RE = P(r(1:2),r(1:2));
-%          [X,Y] = cov2elli(re,RE,3,16);
-%          set(reG,'xdata',X,'ydata',Y);
-%      end
-%    
-   drawnow;
-   
-   pause(0.5);
+    drawnow;
+
+    pause(0.5);
 end   
